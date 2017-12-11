@@ -1,0 +1,22 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="@android:style/Theme.Holo.Light">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+    <style name="App_Theme" parent="Theme.AppCompat">
+        <item name="windowNoTitle">true</item>    <!-- Actionbar color -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <!--&lt;!&ndash;Status bar color&ndash;&gt;-->
+        <item name="colorPrimaryDark">@color/colorPrimary</item>
+        <!--&lt;!&ndash;Window color&ndash;&gt;-->
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorControlNormal">@android:color/white</item>
+    </style>
+</resources>
