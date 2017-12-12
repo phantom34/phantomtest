@@ -4,6 +4,7 @@ import android.net.Uri
 import kotlinx.android.synthetic.main.act_welcome.*
 import test.phantom.com.p90.R
 import test.phantom.com.p90.base.BaseActivityt
+import test.phantom.com.p90.ui.main.MainActivity
 
 /**
  * Created by phantom on 2017/12/7.
