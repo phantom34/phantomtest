@@ -17,17 +17,18 @@ import com.hwangjr.rxbus.annotation.Tag
 import com.hwangjr.rxbus.thread.EventThread
 import io.reactivex.Observable
 import io.reactivex.ObservableOnSubscribe
+import io.reactivex.Observer
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import test.phantom.com.p90.R
 import test.phantom.com.p90.base.SimpleObserver
+import test.phantom.com.p90.dao.BookContentBeanDao
 import test.phantom.com.p90.dao.BookShelfBeanDao
 import test.phantom.com.p90.dao.DbHelper
 import test.phantom.com.p90.dao.DownloadChapterBeanDao
-import test.phantom.com.p90.entity.BookShelfBean
-import test.phantom.com.p90.entity.DownloadChapterBean
-import test.phantom.com.p90.entity.DownloadChapterListBean
-import test.phantom.com.p90.entity.RxBusTag
+import test.phantom.com.p90.entity.*
+import test.phantom.com.p90.model.WebBookModel
 import test.phantom.com.p90.ui.main.MainActivity
 
 
@@ -123,7 +124,7 @@ class DownloadService : Service() {
                     .subscribe(object : SimpleObserver<DownloadChapterBean>() {
                         override fun onNext(t: DownloadChapterBean) {
                             if (t.noteUrl != null && t.noteUrl.isNotEmpty()) {
-                                downLoading()
+                                downLoading(t, 0)
                             } else {
                                 DbHelper.getInstance().getmDaoSession().downloadChapterBeanDao.deleteAll()
                                 isDownloading = false
@@ -168,8 +169,64 @@ class DownloadService : Service() {
         })
     }
 
-    private fun downLoading() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    private fun downLoading(data: DownloadChapterBean, durTime: Int) {
+        if (durTime > reTryTimes && isStartDownload) {
+            isProgress(data)
+            Observable.create(ObservableOnSubscribe<BookContentBean> { e ->
+                var bookLists = DbHelper.getInstance().getmDaoSession()
+                        .bookContentBeanDao.queryBuilder().where(BookContentBeanDao.Properties.DurChapterUrl
+                        .eq(data.durChapterUrl)).list()
+                if (bookLists.isNotEmpty()) {
+                    e.onNext(bookLists[0])
+                } else {
+                    e.onNext(BookContentBean())
+                }
+                e.onComplete()
+            })
+                    .flatMap { t: BookContentBean ->
+                        if (t.durChapterUrl.isEmpty()) {
+                            WebBookModel.instance.getBookContent(data.durChapterUrl, data.durChapterIndex, data.tag)
+                                    .map { t1: BookContentBean ->
+                                        DbHelper.getInstance().getmDaoSession().downloadChapterBeanDao.delete(data)
+                                        if (t1.right) {
+                                            DbHelper.getInstance().getmDaoSession().getBookContentBeanDao().insertOrReplace(t1)
+                                            DbHelper.getInstance().getmDaoSession().getChapterListBeanDao().update(ChapterListBean(data.getNoteUrl(), data.getDurChapterIndex(), data.getDurChapterUrl(), data.getDurChapterName(), data.getTag(), true));
+                                        }
+                                        t1
+                                    }
+                        } else {
+                            Observable.create(ObservableOnSubscribe<BookContentBean>() { e ->
+                                DbHelper.getInstance().getmDaoSession().downloadChapterBeanDao.delete(data)
+                                e.onNext(t)
+                                e.onComplete()
+                            })
+                        }
+
+                    }
+                    .subscribeOn(AndroidSchedulers.mainThread())
+                    .observeOn(Schedulers.io())
+                    .subscribe(object : SimpleObserver<BookContentBean>() {
+                        override fun onNext(t: BookContentBean?) {
+                            if (isStartDownload) {
+                                Handler().postDelayed(Runnable {
+                                    if (isStartDownload)
+                                        toDownLoad()
+                                    else
+                                        isPause()
+                                }, 800)
+                            } else {
+                                isPause()
+                            }
+                        }
+
+                        override fun onError(e: Throwable) {
+                            e.printStackTrace()
+                            var time = durTime + 1
+                            downLoading(data, time)
+                        }
+                    })
+        }
+
     }
 
     fun startDownload() {
@@ -199,6 +256,7 @@ class DownloadService : Service() {
         notifyManager.cancelAll()
         Handler(Looper.getMainLooper()).post(Runnable { Toast.makeText(applicationContext, "全部离线章节下载完成", Toast.LENGTH_SHORT).show() })
     }
+
 
     fun pauseDownload() {
         isStartDownload = false
@@ -231,7 +289,24 @@ class DownloadService : Service() {
     }
 
     private fun cancelDownload() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        Observable.create(ObservableOnSubscribe<Any> { e ->
+            DbHelper.getInstance().getmDaoSession().downloadChapterBeanDao.deleteAll()
+            e.onNext(Any())
+            e.onComplete()
+        })
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(Schedulers.io())
+                .subscribe(object : Observer<Any> {
+                    override fun onComplete() {}
+
+                    override fun onSubscribe(d: Disposable?) {}
+
+                    override fun onError(e: Throwable?) {}
+
+                    override fun onNext(t: Any?) {
+                        pauseDownload()
+                    }
+                })
     }
 
     @Subscribe(
