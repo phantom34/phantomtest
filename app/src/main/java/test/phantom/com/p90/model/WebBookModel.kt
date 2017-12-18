@@ -11,25 +11,21 @@ import test.phantom.com.p90.ui.OnGetChapterListListener
  */
 class WebBookModel private constructor() {
 
-    private object Holder {
-        val INSTANCE = WebBookModel()
-    }
-
     companion object {
-        val instance: WebBookModel by lazy { Holder.INSTANCE }
+
+        val instance: WebBookModel
+            get() = WebBookModel()
     }
 
     /**
      * 网络请求并解析书籍信息
      * return BookShelfBean
      */
-    fun getBookInfo(book: BookShelfBean): Observable<BookShelfBean>? {
-        when (book.tag) {
-            GxwztvBookModel.TAG -> {
-                return GxwztvBookModel.getInstance().getBookInfo(book)
-            }
-            else -> return null
+    fun getBookInfo(book: BookShelfBean): Observable<BookShelfBean>? = when (book.tag) {
+        GxwztvBookModel.TAG -> {
+            GxwztvBookModel.getInstance().getBookInfo(book)
         }
+        else -> null
     }
 
     /**
@@ -39,6 +35,7 @@ class WebBookModel private constructor() {
     fun getChapter(book: BookShelfBean, listener: OnGetChapterListListener) {
         when (book.tag) {
             GxwztvBookModel.TAG -> GxwztvBookModel.getInstance().getBookInfo(book)
+            else  -> listener?.success(book)
         }
 
     }

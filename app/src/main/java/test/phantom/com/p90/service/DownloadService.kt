@@ -189,13 +189,16 @@ class DownloadService : Service() {
                                     .map { t1: BookContentBean ->
                                         DbHelper.getInstance().getmDaoSession().downloadChapterBeanDao.delete(data)
                                         if (t1.right) {
-                                            DbHelper.getInstance().getmDaoSession().getBookContentBeanDao().insertOrReplace(t1)
-                                            DbHelper.getInstance().getmDaoSession().getChapterListBeanDao().update(ChapterListBean(data.getNoteUrl(), data.getDurChapterIndex(), data.getDurChapterUrl(), data.getDurChapterName(), data.getTag(), true));
+                                            DbHelper.getInstance().getmDaoSession().bookContentBeanDao.insertOrReplace(t1)
+                                            DbHelper.getInstance().getmDaoSession().chapterListBeanDao
+                                                    .update(ChapterListBean(data.noteUrl, data.durChapterIndex
+                                                            , data.durChapterUrl, data.durChapterName, data.tag
+                                                            , true))
                                         }
                                         t1
                                     }
                         } else {
-                            Observable.create(ObservableOnSubscribe<BookContentBean>() { e ->
+                            Observable.create({ e ->
                                 DbHelper.getInstance().getmDaoSession().downloadChapterBeanDao.delete(data)
                                 e.onNext(t)
                                 e.onComplete()
@@ -208,7 +211,7 @@ class DownloadService : Service() {
                     .subscribe(object : SimpleObserver<BookContentBean>() {
                         override fun onNext(t: BookContentBean?) {
                             if (isStartDownload) {
-                                Handler().postDelayed(Runnable {
+                                Handler().postDelayed({
                                     if (isStartDownload)
                                         toDownLoad()
                                     else

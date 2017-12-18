@@ -38,30 +38,8 @@
         <attr name="background" format="reference"/>
     </declare-styleable>
 
-    <declare-styleable name="PullToZoomView">
-        <attr name="headerView" format="reference"/>
-        <attr name="contentView" format="reference"/>
-        <attr name="zoomView" format="reference"/>
-        <attr name="isHeaderParallax" format="boolean"/>
-    </declare-styleable>
-
-    <declare-styleable name="GifView">
-        <attr name="gif" format="reference"/>
-        <attr name="paused" format="boolean"/>
-    </declare-styleable>
-
     <declare-styleable name="CustomTheme">
         <attr name="gifViewStyle" format="reference"/>
-    </declare-styleable>
-
-    <declare-styleable name="TagFlowLayout">
-        <attr name="auto_select_effect" format="boolean"></attr>
-        <attr name="max_select" format="integer"></attr>
-        <attr name="gravity">
-            <enum name="left" value="-1"/>
-            <enum name="center" value="0"/>
-            <enum name="right" value="1"/>
-        </attr>
     </declare-styleable>
 
 
@@ -98,5 +76,20 @@
         </attr>
         <attr name="simple_tag_enable" format="boolean"/>
         <attr name="simple_tag_round_radius" format="dimension"/>
+    </declare-styleable>
+
+    <declare-styleable name="SmoothCheckBox">
+        <attr name="duration" format="integer"/>
+        <attr name="stroke_width" format="dimension"/>
+        <attr name="color_tick" format="color"/>
+        <attr name="color_checked" format="color"/>
+        <attr name="color_unchecked" format="color"/>
+        <attr name="color_unchecked_stroke" format="color"/>
+    </declare-styleable>
+
+    <declare-styleable name="RecyclerViewBar">
+        <attr name="slider_height" format="dimension"/>
+        <attr name="slider_paddingLeft" format="dimension"/>
+        <attr name="slider_paddingRight" format="dimension"/>
     </declare-styleable>
 </resources>

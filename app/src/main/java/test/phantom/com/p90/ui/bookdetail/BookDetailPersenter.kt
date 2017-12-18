@@ -1,22 +1,21 @@
 package test.phantom.com.p90.ui.bookdetail
 
+import android.widget.Toast
 import io.reactivex.Observable
 import io.reactivex.ObservableOnSubscribe
 import io.reactivex.ObservableSource
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.functions.Function
 import io.reactivex.schedulers.Schedulers
 import test.phantom.com.p90.base.BasePresenter
 import test.phantom.com.p90.base.SimpleObserver
 import test.phantom.com.p90.dao.DbHelper
 import test.phantom.com.p90.entity.BookShelfBean
 import test.phantom.com.p90.entity.SearchBookBean
+import test.phantom.com.p90.injector.BaseApplication
+import test.phantom.com.p90.model.WebBookModel
+import test.phantom.com.p90.ui.OnGetChapterListListener
 import java.util.*
 import javax.inject.Inject
-import android.widget.Toast
-import test.phantom.com.p90.base.BaseActivity
-import io.reactivex.ObservableEmitter
-import test.phantom.com.p90.injector.BaseApplication
 
 
 /**
@@ -29,7 +28,8 @@ class BookDetailPersenter : BasePresenter {
     private var bookShelfs = Collections.synchronizedList(ArrayList<BookShelfBean>())   //用来比对搜索的书籍是否已经添加进书架
     private var searchBook: SearchBookBean? = null
     private var inBookShelf: Boolean? = false
-    private val bookShelf: BookShelfBean? = null
+    private var bookShelf: BookShelfBean? = null
+    private val openfrom: Int = 0
 
     @Inject
     fun BookDetailPersenter(activity: BookDetailActivity) {
@@ -37,18 +37,31 @@ class BookDetailPersenter : BasePresenter {
     }
 
 
-    fun getBookShlf() {
+    fun getInBookShelf(): Boolean? = inBookShelf
+
+    fun setInBookShelf(inBookShelf: Boolean?) {
+        this.inBookShelf = inBookShelf
+    }
+
+    fun getOpenfrom(): Int = openfrom
+
+    fun getSearchBook(): SearchBookBean? = searchBook
+
+    fun getBookShelf(): BookShelfBean? = bookShelf
+
+
+    fun getBookShlfInfo() {
 
         Observable.create(ObservableOnSubscribe<List<BookShelfBean>> { e ->
             var temp = DbHelper.getInstance().getmDaoSession().bookShelfBeanDao.queryBuilder().list()
-            if (temp != null) {
+            if (temp == null) {
                 temp = ArrayList()
             }
             e.onNext(temp)
             e.onComplete()
         })
-                .flatMap { bookShelfBean ->
-                    bookShelfs!!.addAll(bookShelfBean)
+                .flatMap { bookShelfBeen ->
+                    bookShelfs!!.addAll(bookShelfBeen)
 
                     val bookShelfResult = BookShelfBean()
                     bookShelfResult.noteUrl = searchBook!!.noteUrl
@@ -56,31 +69,41 @@ class BookDetailPersenter : BasePresenter {
                     bookShelfResult.durChapter = 0
                     bookShelfResult.durChapterPage = 0
                     bookShelfResult.tag = searchBook!!.tag
-                    WebBookModelImpl.getInstance().getBookInfo(bookShelfResult)
+                    WebBookModel.instance.getBookInfo(bookShelfResult) as ObservableSource<out BookShelfBean>
                 }
-                .map { bookShelfBean ->
+                .map { it ->
                     for (i in bookShelfs!!.indices) {
-                        if (bookShelfs[i].noteUrl == bookShelfBean.noteUrl) {
+                        if (bookShelfs[i].noteUrl == it.noteUrl) {
                             inBookShelf = true
                             break
                         }
                     }
-                    bookShelfBean
+                    it
                 }
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(object :SimpleObserver<BookShelfBean>(){
-                    override fun onNext(t: BookShelfBean?) {
-                        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                .subscribe(object : SimpleObserver<BookShelfBean>() {
+                    override fun onNext(t: BookShelfBean) {
+                        WebBookModel.instance.getChapter(t, object : OnGetChapterListListener {
+                            override fun success(bookShelfBean: BookShelfBean) {
+                                bookShelf = bookShelfBean
+//                                mView.updateView()
+                            }
+
+                            override fun error() {
+                                bookShelf = null
+//                                mView.getBookShelfError()
+                            }
+                        })
                     }
 
                     override fun onError(e: Throwable?) {
-                        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                        bookShelf = null
                     }
                 })
     }
 
-    fun addBookShlf(){
+    fun addBookShlf() {
         Observable.create(ObservableOnSubscribe<Boolean> { e ->
             DbHelper.getInstance().getmDaoSession().chapterListBeanDao.insertOrReplaceInTx(bookShelf!!.bookInfoBean.chapterlist)
             DbHelper.getInstance().getmDaoSession().bookInfoBeanDao.insertOrReplace(bookShelf!!.bookInfoBean)
