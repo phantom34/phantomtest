@@ -18,6 +18,7 @@ import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import test.phantom.com.p90.R;
 import test.phantom.com.p90.until.DensityUtil;
 
 public class RecyclerViewBar extends LinearLayout {

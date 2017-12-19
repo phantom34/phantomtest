@@ -138,7 +138,7 @@
                     android:layout_height="0dp"
                     android:layout_weight="1"/>
 
-            <android.support.v4.widget.CircleImageView
+            <ImageView
                     android:id="@+id/civ_bg_black"
                     android:layout_width="45dp"
                     android:layout_height="45dp"

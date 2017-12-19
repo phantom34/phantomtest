@@ -7,7 +7,7 @@
              android:id="@+id/fl_content"
              android:keepScreenOn="true">
 
-    <conte
+    <test.phantom.com.p90.widget.ContentSwitchView
             android:id="@+id/csv_book"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
