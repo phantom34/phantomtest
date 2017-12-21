@@ -8,7 +8,7 @@ import javax.inject.Inject
  */
 class ReadBookPresenter : BasePresenter {
 
-
+    /*搁浅*/
     val OPEN_FROM_OTHER = 0
     val OPEN_FROM_APP = 1
 
