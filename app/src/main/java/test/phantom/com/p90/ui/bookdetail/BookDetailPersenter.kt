@@ -31,6 +31,12 @@ class BookDetailPersenter : BasePresenter {
     private var bookShelf: BookShelfBean? = null
     private val openfrom: Int = 0
 
+
+    companion object {
+        val FROM_BOOKSHELF = 1
+        val FROM_SEARCH = 2
+    }
+
     @Inject
     fun BookDetailPersenter(activity: BookDetailActivity) {
         this.mView = activity

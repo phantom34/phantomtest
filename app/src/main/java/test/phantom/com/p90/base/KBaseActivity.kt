@@ -1,6 +1,10 @@
 package test.phantom.com.p90.base
 
+import android.app.ActivityOptions
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.view.View
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import test.phantom.com.p90.injector.ActivityModule
@@ -11,8 +15,8 @@ import test.phantom.com.p90.injector.BaseApplication
 abstract class KBaseActivity<T : BasePresenter> : CommonActivity() {
 
 //    @Inject
-    public lateinit var presenter: T
-
+    public lateinit var mPresenter: T
+    private val start_share_ele = "start_with_share_ele"
     private var disposables2Stop: CompositeDisposable? = null //管理stop取消订阅者
     private var disposables2Destroy: CompositeDisposable? = null//管理Destroy取消订阅者
 
@@ -46,6 +50,8 @@ abstract class KBaseActivity<T : BasePresenter> : CommonActivity() {
         init()
 
         initInjector()
+
+        firstRequest()
         TAG = javaClass.simpleName
     }
 
@@ -109,6 +115,11 @@ abstract class KBaseActivity<T : BasePresenter> : CommonActivity() {
     //Dagger 注入
     protected abstract fun initInjector()
 
+    /**
+     * 首次逻辑操作
+     */
+    protected abstract fun firstRequest()
+
     override fun onDestroy() {
         super.onDestroy()
         if (disposables2Destroy == null) {
@@ -118,4 +129,19 @@ abstract class KBaseActivity<T : BasePresenter> : CommonActivity() {
         disposables2Destroy!!.dispose()
         disposables2Destroy = null
     }
+
+    protected fun startActivityByAnim(intent: Intent, view: View, transitionName: String, animIn: Int, animExit: Int) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            intent.putExtra(start_share_ele, true)
+            startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(this, view, transitionName).toBundle())
+        } else {
+            startActivityByAnim(intent, animIn, animExit)
+        }
+    }
+
+    protected fun startActivityByAnim(intent: Intent, animIn: Int, animExit: Int) {
+        startActivity(intent)
+        overridePendingTransition(animIn, animExit)
+    }
+
 }
