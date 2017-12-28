@@ -48,7 +48,7 @@ public class ChoiceBookPresenter implements ChoiceBookContract.Presenter {
 
     private void init() {
         url = mView.getUrl();
-        title = mView.getTitle();
+        title = mView.getmTitle();
         Observable.create(new ObservableOnSubscribe<List<BookShelfBean>>() {
             @Override
             public void subscribe(ObservableEmitter<List<BookShelfBean>> e) throws Exception {
@@ -113,10 +113,10 @@ public class ChoiceBookPresenter implements ChoiceBookContract.Presenter {
                             }
                             if (page == 1) {
                                 mView.refreshSearchBook(value);
-                                mView.refreshFinish(value.size() <= 0 ? true : false);
+//                                mView.refreshFinish(value.size() <= 0 ? true : false);
                             } else {
                                 mView.loadMoreSearchBook(value);
-                                mView.loadMoreFinish(value.size() <= 0 ? true : false);
+//                                mView.loadMoreFinish(value.size() <= 0 ? true : false);
                             }
                             page++;
                         }

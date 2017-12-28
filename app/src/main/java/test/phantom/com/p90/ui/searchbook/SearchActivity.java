@@ -476,8 +476,18 @@ public class SearchActivity extends KBaseActivity<SearchContarct.Presenter> impl
     }
 
     @Override
+    public List<SearchBookBean> getListData() {
+        return listData;
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         explosionField.clear();
+    }
+
+    @Override
+    protected void firstRequest() {
+
     }
 }

@@ -58,6 +58,8 @@ public interface SearchContarct {
          * 判断书籍是否已经在书架上
          */
         Boolean checkIsExist(SearchBookBean searchBookBean);
+
+        List<SearchBookBean> getListData();
     }
 
     interface Presenter extends BasePresenter {

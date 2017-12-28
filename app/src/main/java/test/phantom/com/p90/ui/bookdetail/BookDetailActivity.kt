@@ -13,6 +13,10 @@ import test.phantom.com.p90.base.KBaseActivity
  */
 class BookDetailActivity : KBaseActivity<BookDetailPersenter>() {
 
+    override fun firstRequest() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
 
     private lateinit var animHideLoading: Animation
     private lateinit var animShowInfo: Animation

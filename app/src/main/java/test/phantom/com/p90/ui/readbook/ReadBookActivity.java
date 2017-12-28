@@ -573,4 +573,9 @@ public class ReadBookActivity extends KBaseActivity<ReadBookPresenter> implement
     protected void initInjector() {
 
     }
+
+    @Override
+    protected void firstRequest() {
+
+    }
 }

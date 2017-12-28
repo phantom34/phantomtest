@@ -272,9 +272,9 @@ public class SearchPresenter implements SearchContarct.Presenter {
                     }
                     if (!fromError) {
                         if (page - 1 == 1) {
-                            mView.refreshFinish(false);
+//                            mView.refreshFinish(false);
                         } else {
-                            mView.loadMoreFinish(false);
+//                            mView.loadMoreFinish(false);
                         }
                     } else {
                         searchBook(content, searchTime, false);
@@ -304,7 +304,7 @@ public class SearchPresenter implements SearchContarct.Presenter {
                                             }
                                         }
                                         if (page == 1 && finalSearchEngineIndex == 0) {
-                                            mView.refreshSearchBook(value);
+//                                            mView.refreshSearchBook(value);
                                         } else {
                                             if (value != null && value.size() > 0 && !mView.checkIsExist(value.get(0))) {
                                                 mView.loadMoreSearchBook(value);
@@ -323,18 +323,18 @@ public class SearchPresenter implements SearchContarct.Presenter {
                                         searchEngine.get(finalSearchEngineIndex).put(HASLOAD_KEY, false);
                                         searchEngine.get(finalSearchEngineIndex).put(DURREQUESTTIME, ((int)
                                                 searchEngine.get(finalSearchEngineIndex).get(DURREQUESTTIME)) + 1);
-                                        mView.searchBookError(page == 1 && (finalSearchEngineIndex == 0 ||
-                                                (finalSearchEngineIndex > 0 && mView.getSearchBookAdapter()
-                                                        .getItemcount() == 0)));
+//                                        mView.searchBookError(page == 1 && (finalSearchEngineIndex == 0 ||
+//                                                (finalSearchEngineIndex > 0 && mView.getSearchBookAdapter()
+//                                                        .getItemcount() == 0)));
                                     }
                                 }
                             });
                 }
             } else {
                 if (page == 1) {
-                    mView.refreshFinish(true);
+//                    mView.refreshFinish(true);
                 } else {
-                    mView.loadMoreFinish(true);
+//                    mView.loadMoreFinish(true);
                 }
                 this.page++;
                 for (Map item : searchEngine) {
@@ -429,7 +429,7 @@ public class SearchPresenter implements SearchContarct.Presenter {
     )
     public void hadAddBook(BookShelfBean bookShelfBean) {
         bookShelfs.add(bookShelfBean);
-        List<SearchBookBean> datas = mView.getSearchBookAdapter().getSearchBooks();
+        List<SearchBookBean> datas = mView.getListData();
         for (int i = 0; i < datas.size(); i++) {
             if (datas.get(i).getNoteUrl().equals(bookShelfBean.getNoteUrl())) {
                 datas.get(i).setAdd(true);
@@ -454,7 +454,7 @@ public class SearchPresenter implements SearchContarct.Presenter {
                 }
             }
         }
-        List<SearchBookBean> datas = mView.getSearchBookAdapter().getSearchBooks();
+        List<SearchBookBean> datas = mView.getListData();
         for (int i = 0; i < datas.size(); i++) {
             if (datas.get(i).getNoteUrl().equals(bookShelfBean.getNoteUrl())) {
                 datas.get(i).setAdd(false);

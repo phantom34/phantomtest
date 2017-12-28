@@ -16,6 +16,9 @@ import test.phantom.com.p90.ui.main.adapter.MainInfoAdapter
 
 
 class MainActivity : KBaseActivity<MainPersenter>(), OnItemClickListener {
+    override fun firstRequest() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 
     private var exitTime: Long = 0
     var mDatas: List<BookShelfBean> = ArrayList()
