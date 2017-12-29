@@ -217,6 +217,11 @@ public class LibraryActivity extends KBaseActivity<LibraryPresenter> implements 
     }
 
     @Override
+    public void finishRefresh() {
+
+    }
+
+    @Override
     protected int getLayoutId() {
         return R.layout.act_library;
     }

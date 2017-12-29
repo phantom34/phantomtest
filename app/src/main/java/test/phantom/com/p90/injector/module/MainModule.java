@@ -12,7 +12,7 @@ import test.phantom.com.p90.ui.main.MainActivity;
 
 @Module
 public class MainModule {
-    private  final MainActivity mView;
+    public MainActivity mView;
 
     public MainModule(MainActivity view) {
         this.mView = view;

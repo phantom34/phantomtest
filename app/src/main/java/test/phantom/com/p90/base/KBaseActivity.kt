@@ -10,12 +10,12 @@ import io.reactivex.disposables.Disposable
 import test.phantom.com.p90.injector.ActivityModule
 import test.phantom.com.p90.injector.ApplicationComponent
 import test.phantom.com.p90.injector.BaseApplication
+import javax.inject.Inject
 
 
 abstract class KBaseActivity<T : BasePresenter> : CommonActivity() {
 
-//    @Inject
-    public lateinit var mPresenter: T
+    @Inject lateinit var mPresenter: T
     private val start_share_ele = "start_with_share_ele"
     private var disposables2Stop: CompositeDisposable? = null //管理stop取消订阅者
     private var disposables2Destroy: CompositeDisposable? = null//管理Destroy取消订阅者
@@ -47,10 +47,10 @@ abstract class KBaseActivity<T : BasePresenter> : CommonActivity() {
         setContentView(getLayoutId())
         mContext = this
         //init()中只进行初始化动作
-        init()
+
 
         initInjector()
-
+        init()
         firstRequest()
         TAG = javaClass.simpleName
     }

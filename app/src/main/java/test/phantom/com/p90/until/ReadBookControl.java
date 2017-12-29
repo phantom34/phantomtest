@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import test.phantom.com.p90.R;
+import test.phantom.com.p90.injector.BaseApplication;
 
 public class ReadBookControl {
     public static final int DEFAULT_TEXT = 2;
@@ -48,27 +49,27 @@ public class ReadBookControl {
             textKind = new ArrayList<>();
             Map<String,Integer> temp1 = new HashMap<>();
             temp1.put("textSize", 14);
-            temp1.put("textExtra", DensityUtil.dp2px(MApplication.getInstance(),6.5f));
+            temp1.put("textExtra", DensityUtil.dp2px(BaseApplication.getInstance(),6.5f));
             textKind.add(temp1);
 
             Map<String,Integer> temp2 = new HashMap<>();
             temp2.put("textSize", 16);
-            temp2.put("textExtra", DensityUtil.dp2px(MApplication.getInstance(),8));
+            temp2.put("textExtra", DensityUtil.dp2px(BaseApplication.getInstance(),8));
             textKind.add(temp2);
 
             Map<String,Integer> temp3 = new HashMap<>();
             temp3.put("textSize", 17);
-            temp3.put("textExtra", DensityUtil.dp2px(MApplication.getInstance(),9));
+            temp3.put("textExtra", DensityUtil.dp2px(BaseApplication.getInstance(),9));
             textKind.add(temp3);
 
             Map<String,Integer> temp4 = new HashMap<>();
             temp4.put("textSize", 20);
-            temp4.put("textExtra", DensityUtil.dp2px(MApplication.getInstance(),11));
+            temp4.put("textExtra", DensityUtil.dp2px(BaseApplication.getInstance(),11));
             textKind.add(temp4);
 
             Map<String,Integer> temp5 = new HashMap<>();
             temp5.put("textSize", 22);
-            temp5.put("textExtra", DensityUtil.dp2px(MApplication.getInstance(),13));
+            temp5.put("textExtra", DensityUtil.dp2px(BaseApplication.getInstance(),13));
             textKind.add(temp5);
         }
         if(null == textDrawable){
@@ -93,7 +94,7 @@ public class ReadBookControl {
             temp4.put("textBackground",R.drawable.bg_readbook_black);
             textDrawable.add(temp4);
         }
-        preference = MApplication.getInstance().getSharedPreferences("CONFIG", 0);
+        preference = BaseApplication.getInstance().getSharedPreferences("CONFIG", 0);
         this.textKindIndex = preference.getInt("textKindIndex",DEFAULT_TEXT);
         this.textSize = textKind.get(textKindIndex).get("textSize");
         this.textExtra = textKind.get(textKindIndex).get("textExtra");

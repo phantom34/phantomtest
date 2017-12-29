@@ -13,12 +13,23 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.ObservableSource;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import test.phantom.com.p90.api.IGxwztvApi;
+import test.phantom.com.p90.base.SimpleObserver;
+import test.phantom.com.p90.cache.ACache;
 import test.phantom.com.p90.entity.BookContentBean;
 import test.phantom.com.p90.entity.BookInfoBean;
 import test.phantom.com.p90.entity.BookShelfBean;
+import test.phantom.com.p90.entity.ChapterListBean;
+import test.phantom.com.p90.entity.LibraryBean;
+import test.phantom.com.p90.entity.LibraryKindBookListBean;
+import test.phantom.com.p90.entity.LibraryNewBookBean;
 import test.phantom.com.p90.entity.SearchBookBean;
+import test.phantom.com.p90.entity.WebChapterBean;
+import test.phantom.com.p90.ui.OnGetChapterListListener;
+import test.phantom.com.p90.ui.library.LibraryPresenter;
 import test.phantom.com.p90.until.ErrorAnalyContentManager;
 
 /**
@@ -168,10 +179,104 @@ public class GxwztvBookModel extends BaseModel {
         });
     }
 
+    /**
+     * 获取主页信息
+     */
+    public Observable<LibraryBean> getLibraryData(final ACache aCache) {
+        return getRetrofitObject(TAG).create(IGxwztvApi.class).getLibraryData("").flatMap(new Function<String, ObservableSource<LibraryBean>>() {
+            @Override
+            public ObservableSource<LibraryBean> apply(String s) throws Exception {
+                if (s != null && s.length() > 0 && aCache != null) {
+                    aCache.put(LibraryPresenter.LIBRARY_CACHE_KEY, s);
+                }
+                return analyLibraryData(s);
+            }
+        });
+    }
 
+    /**
+     * 解析主页数据
+     */
+    public Observable<LibraryBean> analyLibraryData(final String data) {
+        return Observable.create(new ObservableOnSubscribe<LibraryBean>() {
+            @Override
+            public void subscribe(ObservableEmitter<LibraryBean> e) throws Exception {
+                LibraryBean result = new LibraryBean();
+                Document doc = Jsoup.parse(data);
+                Element contentE = doc.getElementsByClass("container").get(0);
+                //解析最新书籍
+                Elements newBookEs = contentE.getElementsByClass("list-group-item text-nowrap modal-open");
+                List<LibraryNewBookBean> libraryNewBooks = new ArrayList<LibraryNewBookBean>();
+                for (int i = 0; i < newBookEs.size(); i++) {
+                    Element itemE = newBookEs.get(i).getElementsByTag("a").get(0);
+                    LibraryNewBookBean item = new LibraryNewBookBean(itemE.text(), TAG + itemE.attr("href"), TAG, "gxwztv.com");
+                    libraryNewBooks.add(item);
+                }
+                result.setLibraryNewBooks(libraryNewBooks);
+                //////////////////////////////////////////////////////////////////////
+                List<LibraryKindBookListBean> kindBooks = new ArrayList<LibraryKindBookListBean>();
+                //解析男频女频
+                Elements hotEs = contentE.getElementsByClass("col-xs-12");
+                for (int i = 1; i < hotEs.size(); i++) {
+                    LibraryKindBookListBean kindItem = new LibraryKindBookListBean();
+                    kindItem.setKindName(hotEs.get(i).getElementsByClass("panel-title").get(0).text());
+                    Elements bookEs = hotEs.get(i).getElementsByClass("panel-body").get(0).getElementsByTag("li");
+
+                    List<SearchBookBean> books = new ArrayList<SearchBookBean>();
+                    for (int j = 0; j < bookEs.size(); j++) {
+                        SearchBookBean searchBookBean = new SearchBookBean();
+                        searchBookBean.setOrigin("gxwztv.com");
+                        searchBookBean.setTag(TAG);
+                        searchBookBean.setName(bookEs.get(j).getElementsByTag("span").get(0).text());
+                        searchBookBean.setNoteUrl(TAG + bookEs.get(j).getElementsByTag("a").get(0).attr("href"));
+                        searchBookBean.setCoverUrl(bookEs.get(j).getElementsByTag("img").get(0).attr("src"));
+                        books.add(searchBookBean);
+                    }
+                    kindItem.setBooks(books);
+                    kindBooks.add(kindItem);
+                }
+                //解析部分分类推荐
+                Elements kindEs = contentE.getElementsByClass("panel panel-info index-category-qk");
+                for (int i = 0; i < kindEs.size(); i++) {
+                    LibraryKindBookListBean kindItem = new LibraryKindBookListBean();
+                    kindItem.setKindName(kindEs.get(i).getElementsByClass("panel-title").get(0).text());
+                    kindItem.setKindUrl(TAG + kindEs.get(i).getElementsByClass("listMore").get(0).getElementsByTag("a").get(0).attr("href"));
+
+                    List<SearchBookBean> books = new ArrayList<SearchBookBean>();
+                    Element firstBookE = kindEs.get(i).getElementsByTag("dl").get(0);
+                    SearchBookBean firstBook = new SearchBookBean();
+                    firstBook.setTag(TAG);
+                    firstBook.setOrigin("gxwztv.com");
+                    firstBook.setName(firstBookE.getElementsByTag("a").get(1).text());
+                    firstBook.setNoteUrl(TAG + firstBookE.getElementsByTag("a").get(0).attr("href"));
+                    firstBook.setCoverUrl(firstBookE.getElementsByTag("a").get(0).getElementsByTag("img").get(0).attr("src"));
+                    firstBook.setKind(kindItem.getKindName());
+                    books.add(firstBook);
+
+                    Elements otherBookEs = kindEs.get(i).getElementsByClass("book_textList").get(0).getElementsByTag("li");
+                    for (int j = 0; j < otherBookEs.size(); j++) {
+                        SearchBookBean item = new SearchBookBean();
+                        item.setTag(TAG);
+                        item.setOrigin("gxwztv.com");
+                        item.setKind(kindItem.getKindName());
+                        item.setNoteUrl(TAG+otherBookEs.get(j).getElementsByTag("a").get(0).attr("href"));
+                        item.setName(otherBookEs.get(j).getElementsByTag("a").get(0).text());
+                        books.add(item);
+                    }
+                    kindItem.setBooks(books);
+                    kindBooks.add(kindItem);
+                }
+                //////////////
+                result.setKindBooks(kindBooks);
+                e.onNext(result);
+                e.onComplete();
+            }
+        });
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public Observable<List<SearchBookBean>> searchBook(String content, int page) {
-        return getRetrofitObject(TAG).create(IGxwztvApi.class).searchBook(content, page).flatMap(new Function<String,
-                ObservableSource<List<SearchBookBean>>>() {
+        return getRetrofitObject(TAG).create(IGxwztvApi.class).searchBook(content, page).flatMap(new Function<String, ObservableSource<List<SearchBookBean>>>() {
             @Override
             public ObservableSource<List<SearchBookBean>> apply(String s) throws Exception {
                 return analySearchBook(s);
@@ -179,13 +284,74 @@ public class GxwztvBookModel extends BaseModel {
         });
     }
 
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public void getChapterList(final BookShelfBean bookShelfBean, final OnGetChapterListListener getChapterListListener) {
+        getRetrofitObject(TAG).create(IGxwztvApi.class).getChapterList(bookShelfBean.getBookInfoBean().getChapterUrl().replace(TAG, "")).flatMap(new Function<String, ObservableSource<WebChapterBean<BookShelfBean>>>() {
+            @Override
+            public ObservableSource<WebChapterBean<BookShelfBean>> apply(String s) throws Exception {
+                return analyChapterList(s, bookShelfBean);
+            }
+        })
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SimpleObserver<WebChapterBean<BookShelfBean>>() {
+                    @Override
+                    public void onNext(WebChapterBean<BookShelfBean> value) {
+                        if (getChapterListListener != null) {
+                            getChapterListListener.success(value.getData());
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        e.printStackTrace();
+                        if (getChapterListListener != null) {
+                            getChapterListListener.error();
+                        }
+                    }
+                });
+    }
+
+    private Observable<WebChapterBean<BookShelfBean>> analyChapterList(final String s, final BookShelfBean bookShelfBean) {
+        return Observable.create(new ObservableOnSubscribe<WebChapterBean<BookShelfBean>>() {
+            @Override
+            public void subscribe(ObservableEmitter<WebChapterBean<BookShelfBean>> e) throws Exception {
+                bookShelfBean.setTag(TAG);
+                WebChapterBean<List<ChapterListBean>> temp = analyChapterlist(s, bookShelfBean.getNoteUrl());
+                bookShelfBean.getBookInfoBean().setChapterlist(temp.getData());
+                e.onNext(new WebChapterBean<BookShelfBean>(bookShelfBean, temp.getNext()));
+                e.onComplete();
+            }
+        });
+    }
+
+    private WebChapterBean<List<ChapterListBean>> analyChapterlist(String s, String novelUrl) {
+        Document doc = Jsoup.parse(s);
+        Elements chapterlist = doc.getElementById("chapters-list").getElementsByTag("a");
+        List<ChapterListBean> chapterBeans = new ArrayList<ChapterListBean>();
+        for (int i = 0; i < chapterlist.size(); i++) {
+            ChapterListBean temp = new ChapterListBean();
+            temp.setDurChapterUrl(TAG + chapterlist.get(i).attr("href"));   //id
+            temp.setDurChapterIndex(i);
+            temp.setDurChapterName(chapterlist.get(i).text());
+            temp.setNoteUrl(novelUrl);
+            temp.setTag(TAG);
+
+            chapterBeans.add(temp);
+        }
+        Boolean next = false;
+        return new WebChapterBean<List<ChapterListBean>>(chapterBeans, next);
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     /**
      * 获取分类书籍
      */
     public Observable<List<SearchBookBean>> getKindBook(String url, int page) {
         url = url + page + ".htm";
-        return getRetrofitObject(GxwztvBookModel.TAG).create(IGxwztvApi.class).getKindBooks(url.replace
-                (GxwztvBookModel.TAG, "")).flatMap(new Function<String, ObservableSource<List<SearchBookBean>>>() {
+        return getRetrofitObject(GxwztvBookModel.TAG).create(IGxwztvApi.class).getKindBooks(url.replace(GxwztvBookModel.TAG, "")).flatMap(new Function<String, ObservableSource<List<SearchBookBean>>>() {
             @Override
             public ObservableSource<List<SearchBookBean>> apply(String s) throws Exception {
                 return analySearchBook(s);

@@ -86,6 +86,11 @@ class MainInfoAdapter(context: Context, list: List<BookShelfBean>) : BaseRecycle
                     .setText(R.id.tv_name, String.format(context.resources.getString(R.string.tv_book_name), data.bookInfoBean.name))
                     .setText(R.id.tv_durprogress, String.format(context.resources.getString(R.string.tv_read_durprogress)
                             , data.bookInfoBean.chapterlist[data.durChapter].durChapterName))
+                    .setOnClickListener(R.id.tv_watch, {
+                        if (mOnItemListener != null) {
+                            mOnItemListener.toSearch()
+                        }
+                    })
         }
     }
 

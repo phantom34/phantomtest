@@ -58,7 +58,6 @@ public class LibraryPresenter implements LibraryContract.Presenter {
         mCache = ACache.get(BaseApplication.getInstance());
     }
 
-    @Override
     public void detachView() {
 
     }
@@ -77,7 +76,7 @@ public class LibraryPresenter implements LibraryContract.Presenter {
             }).flatMap(new Function<String, ObservableSource<LibraryBean>>() {
                 @Override
                 public ObservableSource<LibraryBean> apply(String s) throws Exception {
-                    return GxwztvBookModelImpl.getInstance().analyLibraryData(s);
+                    return GxwztvBookModel.getInstance().analyLibraryData(s);
                 }
             })
                     .subscribeOn(Schedulers.io())
